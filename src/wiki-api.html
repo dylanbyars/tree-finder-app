@@ -1,0 +1,66 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-jsonp-library/iron-jsonp-library.html">
+
+<dom-module id="wiki-api">
+  <template>
+
+    <iron-jsonp-library
+      library-url="[[_requestUrl]]"
+      notify-event="api-load"
+      on-api-load="_newData"
+    ></iron-jsonp-library>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'wiki-api',
+      properties: {
+        baseUrl: {
+          type: String,
+          value: 'https://en.wikipedia.org/w/api.php?'
+        },
+        queryParams: {
+          type: String,
+          value: 'action=query&prop=info&inprop=url&format=json&titles='
+        },
+        title: {
+          type: String,
+          notify: true,
+          reflectToAttribute: true
+        },
+        response: {
+          type: Object,
+          readOnly: true,
+          notify: true,
+          value: function() {
+            return {}
+          }
+        },
+        _requestUrl: {
+          type: String,
+          computed: '_computeUrl(baseUrl, queryParams, title)',
+        }
+      },
+      _computeUrl: function(baseUrl, queryParams, title) {
+        return baseUrl + queryParams + encodeURIComponent(title) + '&callback=%%callback%%';
+      },
+      _newData: function(e) {
+        if (e.detail[0].query.pages[-1]) {
+          this._setResponse({
+            url: '#',
+            title: 'Bad Request. Try a new search term.'
+          })
+        } else {
+          var dataPath = e.detail[0].query.pages
+          var dataKeys = Object.keys(e.detail[0].query.pages)
+          var data = dataPath[dataKeys]
+          this._setResponse({
+            url: data.fullurl,
+            title: data.title
+          })
+        }
+      }
+    });
+  </script>
+</dom-module>

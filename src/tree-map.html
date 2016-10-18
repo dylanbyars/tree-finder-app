@@ -1,0 +1,42 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/google-map/google-map.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="./tree-info.html">
+
+<dom-module id="tree-map">
+
+  <template>
+
+    <style>
+      google-map {
+        height: 100vh;
+      }
+    </style>
+
+    <google-map api-key="AIzaSyCQlSB4yTC8uSpc3-kjmKPFrP_su23tml0" fit-to-markers disable-default-ui>
+
+      <template is="dom-repeat" items="[[trees]]" as="tree" initial-count="5">
+
+        <google-map-marker animation="DROP" latitude="[[tree.latitude]]" longitude="[[tree.longitude]]" title="[[tree.commonName]]">
+
+          <paper-card heading="[[tree.commonName]]" image="">
+
+
+
+          </paper-card>
+
+        </google-map-marker>
+
+      </template>
+
+    </google-map>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'tree-map'
+    })
+  </script>
+
+</dom-module>

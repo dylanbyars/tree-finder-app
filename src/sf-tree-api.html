@@ -1,0 +1,58 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+
+<dom-module id="sf-tree-api">
+
+  <template>
+
+    <iron-ajax auto url="[[_requestUrl]]" handle-as="json" last-response="{{response}}" on-response="handleResponse"></iron-ajax>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'sf-tree-api',
+      properties: {
+        _baseUrl: {
+          type: String,
+          value: 'https://data.sfgov.org/resource/2zah-tuvt.json?'
+        },
+        queryParams: {
+          type: String,
+          value: "$limit=1000&$where=qspecies!='Tree(s) ::'&$order=latitude"
+        },
+        data: {
+          type: Array,
+          readOnly: true,
+          notify: true,
+          value: function() {
+            return []
+          }
+        },
+        _requestUrl: {
+          type: String,
+          computed: '_computeUrl(_baseUrl, queryParams)',
+        }
+      },
+      _computeUrl: function(baseUrl, queryParams) {
+        return baseUrl + queryParams;
+      },
+      handleResponse: function() {
+        var newData = []
+
+        this.response.map(function(item) {
+          newData.push({
+            latitude: item.latitude,
+            longitude: item.longitude,
+            species: item.qspecies.split('::')[0].trim(),
+            commonName: item.qspecies.split('::')[1].trim()
+          })
+        })
+
+        this._setData(newData)
+
+        console.log(this.data)
+      }
+    });
+  </script>
+</dom-module>
