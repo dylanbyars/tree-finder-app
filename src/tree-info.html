@@ -1,14 +1,64 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="./wiki-api.html">
 
 <dom-module id="tree-info">
 
   <template>
 
-    <paper-card heading="[[species]]">
+    <style>
+      .info-window {
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
 
-    </paper-card>
+      .species-name {
+        display: flex;
+        align-self: center;
+        justify-content: center;
+        font-style: italic;
+      }
+
+      .card--content {
+        margin-bottom: 10px;
+      }
+
+      .card--actions {
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .more {
+        margin: 10px 0 0;
+        color: inherit;
+        text-decoration: none;
+      }
+
+      paper-button {
+        transition: all 0.2s ease-out;
+      }
+
+      paper-button:hover {
+        background-color: lime;
+      }
+
+    </style>
+
+    <wiki-api title="[[species]]"></wiki-api>
+
+    <div class="info-window">
+      <h3>[[commonName]]</h3>
+      <h4 class="species-name">[[_urlResponse.title]]</h4>
+      <div class="card--content">[[_summaryResponse]]</div>
+      <div class="card--actions">
+        <a class="more" href="[[_urlResponse.url]]" tab-index="-1">
+          <paper-button raised noink>Wikipedia</paper-button>
+        </a>
+      </div>
+    </div>
+
 
   </template>
 
@@ -16,10 +66,29 @@
     Polymer({
       is: 'tree-info',
       properties: {
-        active: {
-          type: Boolean,
-          value: false
+        _urlResponse: {
+          type: String
+        },
+        _summaryResponse: {
+          type: String
         }
+      },
+      listeners: {
+        'badResponse': 'handleBadResponse',
+        'goodUrlResponse': 'handleUrlResponse',
+        'goodSummaryResponse': 'handleSummaryResponse'
+      },
+      handleBadResponse: function(e) {
+        console.log('Bad Response, yo.')
+        this.set('_urlResponse.title', '')
+        this.set('_urlResponse.url', '#')
+        this.set('_summaryResponse', '')
+      },
+      handleUrlResponse: function(e) {
+        this.set('_urlResponse', e.detail)
+      },
+      handleSummaryResponse: function(e) {
+        this.set('_summaryResponse', e.detail.extract)
       }
     })
   </script>

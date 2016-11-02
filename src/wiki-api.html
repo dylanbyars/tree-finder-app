@@ -2,13 +2,12 @@
 <link rel="import" href="../bower_components/iron-jsonp-library/iron-jsonp-library.html">
 
 <dom-module id="wiki-api">
+
   <template>
 
-    <iron-jsonp-library
-      library-url="[[_requestUrl]]"
-      notify-event="api-load"
-      on-api-load="_newData"
-    ></iron-jsonp-library>
+    <iron-jsonp-library id="getWikiUrl" library-url="[[_urlRequestUrl]]" notify-event="api-load-url" on-api-load-url="_newUrl"></iron-jsonp-library>
+
+    <iron-jsonp-library id="getWikiSummary" library-url="[[_summaryRequestUrl]]" notify-event="api-load-summary" on-api-load-summary="_newSummary"></iron-jsonp-library>
 
   </template>
 
@@ -20,45 +19,67 @@
           type: String,
           value: 'https://en.wikipedia.org/w/api.php?'
         },
-        queryParams: {
+        urlQueryParams: {
           type: String,
           value: 'action=query&prop=info&inprop=url&format=json&titles='
         },
+        summaryQueryParams: {
+          type: String,
+          value: 'format=json&action=query&prop=extracts&exintro=&redirects=1&explaintext=&titles='
+        },
         title: {
           type: String,
-          notify: true,
           reflectToAttribute: true
         },
-        response: {
-          type: Object,
-          readOnly: true,
-          notify: true,
-          value: function() {
-            return {}
-          }
-        },
-        _requestUrl: {
+        _urlRequestUrl: {
           type: String,
-          computed: '_computeUrl(baseUrl, queryParams, title)',
+          computed: '_computeUrl(baseUrl, urlQueryParams, title)',
+        },
+        _summaryRequestUrl: {
+          type: String,
+          computed: '_computeUrl(baseUrl, summaryQueryParams, title)',
         }
       },
       _computeUrl: function(baseUrl, queryParams, title) {
-        return baseUrl + queryParams + encodeURIComponent(title) + '&callback=%%callback%%';
+
+        // Removes ay words in quotes and then removes multiple spaces so the wiki query works
+        var scrubbedTitle = title.replace(/'\w+.+'/, '').trim().replace(/\s+/, ' ')
+
+        return baseUrl + queryParams + encodeURIComponent(scrubbedTitle) + '&callback=%%callback%%';
       },
-      _newData: function(e) {
+      _newUrl: function(e) {
         if (e.detail[0].query.pages[-1]) {
-          this._setResponse({
+          var badResponse = {
             url: '#',
             title: 'Bad Request. Try a new search term.'
-          })
+          }
+          this.fire('badResponse', badResponse)
         } else {
           var dataPath = e.detail[0].query.pages
           var dataKeys = Object.keys(e.detail[0].query.pages)
           var data = dataPath[dataKeys]
-          this._setResponse({
+          var goodUrlResponse = {
             url: data.fullurl,
-            title: data.title
-          })
+            title: data.title,
+          }
+          this.fire('goodUrlResponse', goodUrlResponse)
+        }
+      },
+      _newSummary: function(e) {
+        if (e.detail[0].query.pages[-1]) {
+          var badResponse = {
+            url: '#',
+            title: 'Bad Request. Try a new search term.'
+          }
+          this.fire('badResponse', badResponse)
+        } else {
+          var dataPath = e.detail[0].query.pages
+          var dataKeys = Object.keys(e.detail[0].query.pages)
+          var data = dataPath[dataKeys]
+          var goodSummaryResponse = {
+            extract: data.extract
+          }
+          this.fire('goodSummaryResponse', goodSummaryResponse)
         }
       }
     });

@@ -3,7 +3,7 @@
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="./sf-tree-api.html">
-<link rel="import" href="./tree-map.html"
+<link rel="import" href="./tree-map.html">
 <link rel="import" href="my-icons.html">
 
 <dom-module id="tree-id">
@@ -17,11 +17,13 @@
         height: 100vh;
       }
     </style>
+
+    <sf-tree-api data="{{treeData}}" tree-species="{{treeSpecies}}"></sf-tree-api>
+
+    <tree-map trees="[[treeData]]"></tree-map>
+
+
   </template>
-
-    <sf-tree-api data="{{trees}}"></sf-tree-api>
-
-    <tree-map trees="[[trees]]"></tree-map>
 
   <script>
     Polymer({

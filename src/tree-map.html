@@ -1,7 +1,14 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/google-map/google-map.html">
-<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+
 <link rel="import" href="./tree-info.html">
+<link rel="import" href="./login-modal.html">
 
 <dom-module id="tree-map">
 
@@ -11,19 +18,47 @@
       google-map {
         height: 100vh;
       }
+
+      paper-dialog {
+        max-width: 560px;
+        border-radius: 2px;
+      }
+
+      --paper-toolbar-transition {
+        /* Adjust the timing so the tooltip comes up later.
+          default value is 'height 0.18s ease-in'
+        */
+      }
+
+      .interactions {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .interaction {
+        transition: 150ms ease-out;
+      }
+
+      .up-vote:hover {
+        fill: #2BC016;
+      }
+
+      .take-picture:hover {
+        fill: #9BD1E5;
+      }
+
+      .close:hover {
+        fill: #FF3C38;
+      }
+
+      .close {}
     </style>
 
-    <google-map api-key="AIzaSyCQlSB4yTC8uSpc3-kjmKPFrP_su23tml0" fit-to-markers disable-default-ui>
+    <google-map id="map" latitude="[[startLat]]" longitude="[[startLong]]" api-key="AIzaSyCQlSB4yTC8uSpc3-kjmKPFrP_su23tml0" zoom="14" disable-default-ui>
 
       <template is="dom-repeat" items="[[trees]]" as="tree" initial-count="5">
 
-        <google-map-marker animation="DROP" latitude="[[tree.latitude]]" longitude="[[tree.longitude]]" title="[[tree.commonName]]">
-
-          <paper-card heading="[[tree.commonName]]" image="">
-
-
-
-          </paper-card>
+        <google-map-marker latitude="[[tree.latitude]]" longitude="[[tree.longitude]]" title="[[tree.commonName]]" species="[[tree.species]]" click-events>
 
         </google-map-marker>
 
@@ -31,11 +66,109 @@
 
     </google-map>
 
+    <paper-dialog id="infoWindow" entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+
+      <login-modal></login-modal>
+
+      <div class="interactions">
+
+        <paper-button onclick="needLogin.open()" noink>
+          <iron-icon class="interaction up-vote" icon="icons:thumb-up"></iron-icon>
+          <paper-tooltip offset="5">Like this tree</paper-tooltip>
+        </paper-button>
+
+        <paper-button onclick="needLogin.open()" noink>
+          <iron-icon class="interaction take-picture" icon="icons:camera-enhance"></iron-icon>
+          <paper-tooltip offset="5">Add a picture of this tree</paper-tooltip>
+        </paper-button>
+
+        <paper-button onclick="infoWindow.close()" noink>
+          <iron-icon class="interaction close" icon="icons:close"></iron-icon>
+          <paper-tooltip offset="5">Close</paper-tooltip>
+        </paper-button>
+
+      </div>
+
+      <paper-dialog-scrollable>
+        <tree-info id="treeInfo" species="[[searchSpecies]]" common-name="[[commonName]]"></tree-info>
+      </paper-dialog-scrollable>
+
+    </paper-dialog>
+
   </template>
 
   <script>
     Polymer({
-      is: 'tree-map'
+      is: 'tree-map',
+      properties: {
+        startLong: {
+          value: Number,
+          notify: true
+        },
+        startLat: {
+          type: Number,
+          notify: true
+        },
+        searchSpecies: {
+          type: String,
+          notify: true,
+          readOnly: true
+        },
+        commonName: {
+          type: String,
+          notify: true,
+          readOnly: true
+        }
+      },
+      listeners: {
+        'google-map-marker-click': 'setTreeInfo',
+      },
+      setTreeInfo: function(e) {
+        this._setSearchSpecies(e.target.species)
+        this._setCommonName(e.target.title)
+        console.log('Search Species: ' + this.searchSpecies)
+        this.$.infoWindow.open()
+      },
+      // Geolocation feature for later, maybe...
+      //ready: function() {
+      //  function success(position) {
+      //    var crd = position.coords
+      //    console.log(crd)
+      //    return crd
+      //  }
+      //  console.log(navigator.geolocation.getCurrentPosition(success))
+      //}
+      //ready: function() {
+      //  console.log(this.$.map.getBounds())
+      //}
+
+      // Automatically focuses the map on a random location inside the area
+      // that the SF-Tree-Api element has data for.
+      // This mimics an auto-locate feature of someone somewhere in San Francisco.
+      ready: function() {
+
+        var latMin = 37.709864
+        var latMax = 37.781918
+        var longMin = 122.398942
+        var longMax = 122.501212
+
+        //tr = 37.790326, -122.398942
+        //tl = 37.781918, -122.501212
+        //br = 37.714352, -122.394476
+        //bl = 37.709864, -122.501241
+
+        function randomNum(min, max) {
+          return Math.random() * (max - min) + min
+        }
+
+        var startLat = randomNum(latMin, latMax)
+        var startLong = ['-', randomNum(longMin, longMax)].join('')
+
+        console.log('Map Origin: ' + startLat + ', ' + startLong)
+
+        this.set('startLat', startLat)
+        this.set('startLong', startLong)
+      }
     })
   </script>
 

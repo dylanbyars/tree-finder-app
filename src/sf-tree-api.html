@@ -19,7 +19,7 @@
         },
         queryParams: {
           type: String,
-          value: "$limit=1000&$where=qspecies!='Tree(s) ::'&$order=latitude"
+          value: "$limit=1000&$where=latitude between 37.709864 and 37.781918 AND longitude between -122.501212 and -122.39894"
         },
         data: {
           type: Array,
@@ -35,7 +35,10 @@
         }
       },
       _computeUrl: function(baseUrl, queryParams) {
-        return baseUrl + queryParams;
+        var params = baseUrl + queryParams
+        console.log('SF Tree Api Query String: ' + params)
+
+        return baseUrl + queryParams
       },
       handleResponse: function() {
         var newData = []
@@ -50,8 +53,6 @@
         })
 
         this._setData(newData)
-
-        console.log(this.data)
       }
     });
   </script>
