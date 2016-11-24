@@ -1,4 +1,3 @@
-<link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 
 <dom-module id="sf-tree-api">
@@ -19,7 +18,25 @@
         },
         queryParams: {
           type: String,
-          value: "$limit=1000&$where=latitude between 37.709864 and 37.781918 AND longitude between -122.501212 and -122.39894"
+          computed: '_computeQueryParams(limit, searchRadius)'
+        },
+        startLat: {
+          type: String
+        },
+        startLong: {
+          type: String
+        },
+        limit: {
+          type: String,
+          value: '1000'
+        },
+        searchRadius: {
+          type: String,
+          computed: '_computeSearchRadius(startLat, startLong)'
+        },
+        exclude: {
+          type: String,
+          value: "$where=qspecies!='Tree(s) ::'"
         },
         data: {
           type: Array,
@@ -39,6 +56,12 @@
         console.log('SF Tree Api Query String: ' + params)
 
         return baseUrl + queryParams
+      },
+      _computeSearchRadius: function(lat, long) {
+        return `$where=within_circle(location, ${lat}, ${long}, 1000)`
+      },
+      _computeQueryParams: function(limit, searchRadius) {
+        return `$limit=${limit}&${searchRadius}`
       },
       handleResponse: function() {
         var newData = []

@@ -1,0 +1,62 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<!-- <link rel="import" href="./splash-screen.html"> -->
+<link rel="import" href="sf-tree-api.html">
+<link rel="import" href="tree-map.html">
+
+<dom-module id="tree-finder-app">
+
+  <template>
+
+    <style>
+
+
+
+    </style>
+
+    <sf-tree-api data="{{treeData}}" tree-species="{{treeSpecies}}" start-lat="[[startLat]]" start-long="[[startLong]]"></sf-tree-api>
+
+    <tree-map trees="[[treeData]]" start-lat="[[startLat]]" start-long="[[startLong]]"></tree-map>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'tree-finder-app',
+      properties: {
+        startLat: {
+          type: String
+        },
+        startLong: {
+          type: String
+        },
+        bar: {
+          type: String,
+          value: 'barbarbar'
+        }
+      },
+      // Automatically focuses the map on a random location inside the area
+      // that the SF-Tree-Api element has data for.
+      // This mimics an auto-locate feature of someone somewhere in San Francisco.
+      ready: function() {
+
+        var latMin = 37.709864
+        var latMax = 37.781918
+        var longMin = 122.398942
+        var longMax = 122.501212
+
+        function randomNum(min, max) {
+          return Math.random() * (max - min) + min
+        }
+
+        var startLat = randomNum(latMin, latMax)
+        var startLong = ['-', randomNum(longMin, longMax)].join('')
+
+        console.log('Map Origin: ' + startLat + ', ' + startLong)
+
+        this.set('startLat', startLat)
+        this.set('startLong', startLong)
+      }
+    })
+  </script>
+
+</dom-module>
